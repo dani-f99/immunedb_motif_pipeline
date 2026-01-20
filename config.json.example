@@ -1,0 +1,10 @@
+{"sql":{"adress":"0.0.0.0",
+        "port":"0000",
+        "username":"mysql_username",
+        "password":"mysql_password"
+        },
+ "database":{"db_name":"mysql_db",
+             "subject_id":"1,2,3",
+             "metadata_label":"cell_type"
+             }         
+}
