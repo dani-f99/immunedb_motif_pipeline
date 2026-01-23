@@ -193,3 +193,66 @@ def run_pipeline(test_pipeline,
             print("Final Status: SUCCESS V")
         else:
             print(f"Final Status: FAILED X ({len(result.failures) + len(result.errors)} issues found)")
+
+
+#####################################################################################
+# Function that create the required folders and defines paths for the data processing 
+def init_paths(analysis_name : str,
+               database_name : str) -> list:
+    
+    """
+    Function that create the required folders and defines paths for the data processing.
+    the folders final path will be: `main_folder/analysis_name/database_name`, for example.
+    the output will be list of 4 paths:"data_raw/...", "data_temp/...", "results_figures/...", "results_tables/..."
+    analysis name : str -> name of the anlysis performed, for example "lpa_analysis".
+    database_name : name of the database, imported from the `config.json` file.
+    """
+    
+    # Defining and creating the main folders
+    paths = ["data_raw", "data_temp", "results_figures", "results_tables"]
+    create_folders(paths)
+
+    # Defining and creating the sub-folders according to the input arguments.
+    for i in [analysis_name, database_name]:
+        paths = [os.path.join(j, i) for j in paths]
+        create_folders(paths)
+
+    return paths
+
+
+########################################################################
+# Function that create report file and update it's values based on input
+def reports(report_name : str,
+            step : str):
+    """
+    report_name : str -> name of the report file in the format of `analysis-database_report` (.txt will be added later).
+    step_name : str / list -> the line which be added to the report, if several lines the input should be a list.
+    """
+    # Creating reports folder
+    create_folders(["reports"])
+    
+    # Initilizing paths and names
+    report_path = os.path.join("reports", report_name+".txt")
+    report_bool = os.path.exists(report_path)
+    name_splited = report_name.split("-")
+    steps_dict = {True:step, False:[step]}
+    steps = steps_dict[isinstance(step, (list, tuple))]
+    
+    lines_count = 1
+    if report_bool:
+        with open(report_path, "r") as report:
+            lines_count = len(report.readlines())
+
+
+    # Creating new report file and adding header, if file doesnt exists
+    # If report file already exists -> add the required line only
+    with open(report_path, "a") as report:
+        if report_bool is False:
+            try:
+                report.write(f"> Report File of {name_splited[0].replace("_"," ")} Analysis ({name_splited[1]} database).\n")
+            except:
+                report.write(f"> Report File of {report_name}\n")
+
+        for i in steps:
+            report.write(f"{lines_count} {i}\n")
+            lines_count += 1
