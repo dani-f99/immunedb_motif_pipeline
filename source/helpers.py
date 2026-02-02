@@ -211,7 +211,7 @@ def init_paths(analysis_name : str,
     # Defining and creating the main folders
     paths = ["data_temp", "results_figures", "results_tables"]
     create_folders(paths + ["data_raw"])
-    create_folders(os.path.join("data_raw", database_name))
+    create_folders([os.path.join("data_raw", database_name)])
 
     # Defining and creating the sub-folders according to the input arguments.
     for i in [analysis_name, database_name]:

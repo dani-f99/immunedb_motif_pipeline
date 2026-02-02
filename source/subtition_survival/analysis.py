@@ -38,46 +38,41 @@ class sub_mut():
 
         # Importing the required raw tables from the MySQL server
         req_tables = self.config_info[self.analysis_type]["req_tables"].split(",")
-        sql_engine = mysql_qry()
-        imported_tabeles = []
+        self.raw_path = os.path.join("data_raw", self.db_name)
 
-        # Importing each required table from the MySQL server
-        for i in tqdm(req_tables, desc="Importing MySQL tables", unit="tables"):
-            i_table_path = os.path.join(self.paths[0], f"{i}.csv")
-            i_exists = os.path.exists(i_table_path)
+        for i in req_tables:
+            print(f"{i}.csv:")
+            i_path = os.path.join(self.raw_path, i+".csv")
 
-            # Cheecking if the raw table already exsits, if so importing
-            if i_exists is False:
-                temp_qry = f"""
-                            SELECT * FROM {self.db_name}.{i};
-                            """
-                
-                # Incase of invalid input error
-                try:
-                    temp_df = sql_engine.run_qry(temp_qry)
-                    temp_df.to_csv(i_table_path)
-                    imported_tabeles.append(i)
+            if os.path.exists(i_path):
+                print(f"> raw table `{i}` already exists at {i_path}. continuing.")
 
-                except:
-                    print(f"> Invalid database or table name. (db={self.db_name}, table={i})")
-                    continue
-        
-        # I table already exists -> moving on
-        else:
-            print(f"> table `{i}.csv` alread exists.")
+            else:
+                print(f"> importing table `{i}` to {i_path}.")
 
-        # Verifing the existance of all of the rquired tables
-        
-        if (np.sort(["clones", "clone_stats", "sample_metadata"]) == np.sort([i.split(".")[0] for i in os.listdir(self.paths[0])])).all():
-            # Finishing report
-            print(f"> Finished importing raw tabels ({os.listdir(self.paths[0])}).")
-            sql_engine.close_conn()
+                sql_engine = mysql_qry()
+                imported_tabeles = []
 
-            # Adding to the report -> Successfully imported (or verified) MySQL tables.
-            reports(self.report_name,"Successfully imported (or verified) MySQL tables.")
-        
-        else:
-            raise Exception("Verify config file for correct tables values.")
+                # Importing each required table from the MySQL server
+                for i in tqdm(req_tables, desc="Importing MySQL tables", unit="tables"):
+                    i_table_path = os.path.join(self.paths[0], f"{i}.csv")
+                    i_exists = os.path.exists(i_table_path)
+
+                    # Cheecking if the raw table already exsits, if so importing
+                    if i_exists is False:
+                        temp_qry = f"""
+                                    SELECT * FROM {self.db_name}.{i};
+                                    """
+                        
+                        # Incase of invalid input error
+                        try:
+                            temp_df = sql_engine.run_qry(temp_qry)
+                            temp_df.to_csv(i_path)
+                            imported_tabeles.append(i)
+
+                        except:
+                            print(f"> Invalid database or table name. (db={self.db_name}, table={i})")
+                            continue
 
 
     # Creation of mutation table
@@ -128,7 +123,7 @@ class sub_mut():
             meta_sample = meta_df.loc[meta_df["sample_id"]==sample_id, meta_list].values.flatten()
             return meta_sample
         
-        clone_stats = pd.read_csv(os.path.join(self.paths[0], "clone_stats.csv"), index_col=0)
+        clone_stats = pd.read_csv(os.path.join(self.raw_path, "clone_stats.csv"), index_col=0)
         metalist_sids = np.sort(metadata_df.sample_id.unique())
         clones_sids = np.sort(clone_stats.dropna().sample_id.unique()).astype("int")
 
@@ -159,7 +154,7 @@ class sub_mut():
             print("> clones_merged dataframe exists, loading and continuing....")
 
         else: 
-            clones = pd.read_csv(os.path.join(self.paths[0], "clones.csv"))
+            clones = pd.read_csv(os.path.join(self.raw_path, "clones.csv"))
             clones_merged = clone_stats.merge(right=clones[["id","germline"]],
                                                 how="left",
                                                 left_on="clone_id",
