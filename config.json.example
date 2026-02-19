@@ -1,10 +1,18 @@
 {"sql":{"adress":"0.0.0.0",
         "port":"0000",
-        "username":"mysql_username",
-        "password":"mysql_password"
+        "username":"username",
+        "password":"password"
         },
- "database":{"db_name":"mysql_db",
+ "database":{"db_name":"database_name",
              "subject_id":"1,2,3",
-             "metadata_label":"cell_type"
-             }         
+             "metadata_label":"cell_subset"
+             },
+ "substitution_sruvival":{"req_tables":"clones,clone_stats,sample_metadata",
+                          "req_metadata":"collection_time_point_relative,cell_subset",
+                          "new_metadata_labels":"time_point,ab_target",
+                          "clone_filter":10,
+                          "fig_remap": "True",
+                          "fig_order": "time_point,ab_target,subject_id",
+                          "fig_order_change": "True"
+                         }
 }
